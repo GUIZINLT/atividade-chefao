@@ -1,0 +1,188 @@
+<title>Onde iniciar meu pedido (MVP)</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Public+Sans:wght@600;800&display=swap">
+<style>
+/* Layout: uma coluna estreita de leitura; o canal vigente vem primeiro, o sistema anterior por último */
+:root{
+  --bg:#f5f7f6; --surface:#ffffff; --fg:#14241f; --muted:#4a5a55; --line:#cfd9d5;
+  --brand:#0b5d4b; --brand-fg:#ffffff; --brand-soft:#e3f1ec;
+  --sun:#f2b632; --sun-soft:#fff4d6; --sun-fg:#4a3500;
+  --focus:#1d4ed8; --note:#7a2e8a; --note-fg:#ffffff;
+  --display:"Public Sans",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1715; --surface:#16211e; --fg:#e7efec; --muted:#a9bab4; --line:#2c3b37;
+  --brand:#5cc7a8; --brand-fg:#06231b; --brand-soft:#173029;
+  --sun:#f2b632; --sun-soft:#2e2610; --sun-fg:#ffe39a;
+  --focus:#93b4ff; --note:#d9a3e6; --note-fg:#1d0b22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1715; --surface:#16211e; --fg:#e7efec; --muted:#a9bab4; --line:#2c3b37;
+  --brand:#5cc7a8; --brand-fg:#06231b; --brand-soft:#173029;
+  --sun:#f2b632; --sun-soft:#2e2610; --sun-fg:#ffe39a;
+  --focus:#93b4ff; --note:#d9a3e6; --note-fg:#1d0b22; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:1.0625rem;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 3rem}
+.wrap{max-width:44rem;margin:0 auto;display:flex;flex-direction:column;gap:1.5rem}
+h1,h2,h3{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.6rem,4vw,2.1rem);font-weight:800}
+h2{font-size:1.3rem;font-weight:800}
+h3{font-size:1.05rem;font-weight:600}
+p{margin:0}
+a{color:var(--brand)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px;border-radius:4px}
+.skip{position:absolute;left:-999px;top:0}
+.skip:focus{left:max(16px,env(safe-area-inset-left,0px));top:calc(env(safe-area-inset-top,0px) + 8px);background:var(--surface);padding:.5rem .8rem;z-index:5}
+.demo{margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:.6rem max(16px,env(safe-area-inset-left,0px));
+  background:var(--sun-soft);color:var(--sun-fg);border-bottom:1px solid var(--sun);font-size:.95rem}
+.demo strong{font-weight:700}
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.75rem;padding-top:1rem}
+.crumb{font-size:.95rem;color:var(--muted)}
+.lead{color:var(--muted);max-width:60ch}
+
+/* Canal vigente: o único bloco com destaque forte */
+.canal{background:var(--surface);border:2px solid var(--brand);border-radius:12px;padding:1.25rem;display:flex;flex-direction:column;gap:1rem}
+.tag{display:inline-flex;align-items:center;gap:.4rem;align-self:flex-start;background:var(--brand-soft);color:var(--fg);
+  font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:.25rem .6rem;border-radius:999px}
+.tag::before{content:"";width:.55rem;height:.55rem;border-radius:50%;background:var(--brand)}
+.vig{font-size:1.05rem}
+.vig time{font-weight:700}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:3rem;padding:.7rem 1.2rem;border-radius:8px;
+  background:var(--brand);color:var(--brand-fg);font-weight:700;text-decoration:none;font-size:1.05rem;border:0;cursor:pointer;font-family:inherit}
+.btn:hover{filter:brightness(1.08)}
+.addr{font-size:.95rem;color:var(--muted);overflow-wrap:anywhere}
+.addr code{font-family:ui-monospace,Consolas,monospace;color:var(--fg)}
+
+.passos{list-style:none;margin:0;padding:0;display:grid;gap:.6rem;counter-reset:p}
+.passos li{counter-increment:p;display:grid;grid-template-columns:2rem 1fr;gap:.75rem;align-items:start}
+.passos li::before{content:counter(p);width:2rem;height:2rem;border-radius:50%;display:grid;place-items:center;
+  background:var(--brand-soft);color:var(--fg);font-weight:700;font-family:var(--display)}
+.passos b{display:block}
+.passos span{color:var(--muted);font-size:.98rem}
+
+.box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:1.25rem;display:flex;flex-direction:column;gap:.75rem}
+fieldset{border:0;margin:0;padding:0;display:grid;gap:.5rem}
+legend{font-weight:700;margin-bottom:.5rem}
+.opt{display:flex;gap:.6rem;align-items:flex-start;padding:.6rem .75rem;border:1px solid var(--line);border-radius:8px;cursor:pointer}
+.opt input{flex-shrink:0;margin-top:.35rem;width:1.1rem;height:1.1rem;accent-color:var(--brand)}
+.resp{border-left:4px solid var(--brand);padding:.6rem .9rem;background:var(--brand-soft);border-radius:0 8px 8px 0}
+
+.legado{border-top:1px solid var(--line);padding-top:1.25rem;display:flex;flex-direction:column;gap:.6rem}
+.legado h2{font-size:1.05rem}
+.legado p{color:var(--muted);font-size:.98rem}
+.legado ul{margin:0;padding-left:1.2rem;display:grid;gap:.3rem}
+
+.sim{background:var(--surface);border:2px dashed var(--brand);border-radius:12px;padding:1.25rem;display:flex;flex-direction:column;gap:.75rem}
+
+/* Modo de anotação: liga as etiquetas de critério de aceitação */
+.anot-bar{display:flex;align-items:center;gap:.5rem;font-size:.95rem}
+.anot-bar input{width:1.1rem;height:1.1rem}
+[data-crit]{position:relative}
+body.anot [data-crit]{outline:2px dashed var(--note);outline-offset:4px}
+body.anot [data-crit]::after{content:attr(data-crit);position:absolute;top:-1.1rem;right:.5rem;white-space:nowrap;background:var(--note);color:var(--note-fg);
+  font:700 .72rem/1.2 var(--body);padding:.2rem .45rem;border-radius:4px;letter-spacing:.02em;max-width:70%;text-align:right}
+footer{color:var(--muted);font-size:.9rem;border-top:1px solid var(--line);padding-top:1rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
+<div class="demo" role="note"><strong>Protótipo de estudo com dados fictícios.</strong> Não é um site da Prefeitura de Palmas. Os botões levam a telas simuladas.</div>
+
+<div class="wrap">
+  <div class="top">
+    <p class="crumb">Serviços ao cidadão › Processos administrativos</p>
+  </div>
+
+  <main id="conteudo" class="wrap" tabindex="-1">
+    <section id="inicio" class="wrap" aria-labelledby="t1">
+      <h1 id="t1">Vai abrir um novo processo administrativo? Comece pelo SEI.</h1>
+      <p class="lead">Esta página diz onde começar e o que você vai fazer em cada etapa. Leva cerca de 1 minuto para ler.</p>
+
+      <div class="canal" data-crit="C2 · canal vigente, data e link oficial antes do legado">
+        <span class="tag" data-crit="C2a">Canal vigente</span>
+        <h2>SEI — Peticionamento eletrônico</h2>
+        <p class="vig" data-crit="C2b · data de vigência">Desde <time datetime="2026-09-14">14 de setembro de 2026</time>, todo <b>novo</b> processo administrativo começa no SEI.</p>
+        <div data-crit="C2c · link oficial do SEI" style="display:flex;flex-direction:column;gap:.5rem">
+          <a class="btn" id="ir-sei" href="#sei">Começar meu pedido no SEI <span aria-hidden="true">→</span></a>
+          <p class="addr">Endereço oficial: <code>portalsei.palmas.to.gov.br</code></p>
+        </div>
+
+        <h3>O que você vai fazer</h3>
+        <ol class="passos" data-crit="Passos necessários (texto da história)">
+          <li><div><b>Entrar com sua conta gov.br</b><span>Na primeira vez, o SEI pede um cadastro de usuário externo.</span></div></li>
+          <li><div><b>Escolher o tipo de processo</b><span>Procure pelo nome do serviço que você precisa.</span></div></li>
+          <li><div><b>Preencher e anexar os documentos</b><span>A lista de documentos muda conforme o serviço.</span></div></li>
+          <li><div><b>Enviar e guardar o recibo</b><span>O recibo traz o número do protocolo para acompanhar o pedido.</span></div></li>
+        </ol>
+      </div>
+
+      <div class="box" data-crit="C1 · apoio à tarefa: identificar o canal sem ajuda">
+        <fieldset>
+          <legend>Não tem certeza? Escolha o seu caso</legend>
+          <label class="opt" for="c-novo"><input type="radio" name="caso" id="c-novo" value="novo"> Quero abrir um pedido novo</label>
+          <label class="opt" for="c-antigo"><input type="radio" name="caso" id="c-antigo" value="antigo"> Quero acompanhar um pedido aberto antes de 14/09/2026</label>
+          <label class="opt" for="c-ajuda"><input type="radio" name="caso" id="c-ajuda" value="ajuda"> Prefiro ser atendido por uma pessoa</label>
+        </fieldset>
+        <p class="resp" id="resp" role="status" aria-live="polite">Escolha uma opção para ver onde ir.</p>
+      </div>
+
+      <div class="box">
+        <h2>Prefere atendimento presencial?</h2>
+        <p>No <b>Resolve Palmas</b> há atendimento assistido: uma pessoa ajuda você a fazer o pedido no SEI. <span class="addr">(Endereço e horário omitidos neste protótipo.)</span></p>
+      </div>
+
+      <div class="legado" data-crit="C2d · links do sistema anterior vêm por último">
+        <h2>Só para pedidos abertos antes de 14/09/2026</h2>
+        <p>Estes links levam ao sistema anterior (Portal Palmas Cidadão). <b>Pedido novo não pode ser feito aqui</b>: use o botão “Começar meu pedido no SEI”, no topo.</p>
+        <ul>
+          <li><a href="#legado">Acompanhar pedido aberto antes de 14/09/2026</a></li>
+          <li><a href="#legado">Manuais antigos (sistema anterior)</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="sei" class="sim" hidden aria-labelledby="t2">
+      <h2 id="t2">Tela simulada: você chegou ao SEI</h2>
+      <p>No serviço real, aqui abriria o Portal SEI para entrar com gov.br. Neste protótipo nada é enviado e nenhum dado é pedido.</p>
+      <p><a href="#inicio">← Voltar para a orientação</a></p>
+    </section>
+
+    <section id="legado" class="sim" hidden aria-labelledby="t3">
+      <h2 id="t3">Tela simulada: sistema anterior</h2>
+      <p>Você está no Portal Palmas Cidadão. <b>Novos pedidos não começam aqui.</b></p>
+      <a class="btn" href="#sei">Tenho um pedido novo: ir para o SEI <span aria-hidden="true">→</span></a>
+      <p><a href="#inicio">← Voltar para a orientação</a></p>
+    </section>
+  </main>
+
+  <footer>Protótipo acadêmico · Trilha C · dados fictícios · fontes públicas: notícia da Prefeitura de Palmas de 11/09/2026 e Portal SEI Palmas.</footer>
+</div>
+
+<script>
+(function(){
+  var views=["inicio","sei","legado"];
+  function show(){
+    var h=(location.hash||"#inicio").slice(1);
+    if(views.indexOf(h)<0) h="inicio";
+    views.forEach(function(v){document.getElementById(v).hidden=(v!==h);});
+    var t=document.getElementById(h).querySelector("h1,h2");
+    if(t && location.hash){t.setAttribute("tabindex","-1");t.focus();}
+  }
+  window.addEventListener("hashchange",show); show();
+
+  var msgs={
+    novo:"Pedido novo: comece no <b>SEI</b>, pelo botão “Começar meu pedido no SEI”, logo acima.",
+    antigo:"Pedido aberto antes de 14/09/2026: acompanhe no <b>sistema anterior</b> (links no fim da página).",
+    ajuda:"Atendimento por uma pessoa: vá ao <b>Resolve Palmas</b>. Lá ajudam você a fazer o pedido no SEI."
+  };
+  document.querySelectorAll('input[name="caso"]').forEach(function(r){
+    r.addEventListener("change",function(){document.getElementById("resp").innerHTML=msgs[r.value];});
+  });
+
+  var a=document.getElementById("anot");
+  if(a) a.addEventListener("change",function(){document.body.classList.toggle("anot",a.checked);});
+})();
+</script>
